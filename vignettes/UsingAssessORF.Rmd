@@ -118,18 +118,18 @@ dbConn <- dbConnect(SQLite(), dbFile)
 ## CSV file instead. The rest of this example assumes that the links are
 ## provided in this format. For help on adding genome sequences provided in
 ## other formats to a database, consult DECIPHER's manual and vignettes.
-genomesFile <- system.file("extdata",
+relGenomesFile <- system.file("extdata",
                            "AdenoviridaeGenomes.csv",
                            package = "AssessORF")
 ## Here is what the alternate option would like:
-# genomesFile <- "<insert path to CSV file here>"
+# relGenomesFile <- "<insert path to CSV file here>"
 
 ## Extract the FTP links from the CSV file and make sure they are in the right
 ## format so they can be downloaded from the NCBI server. In order to minimize
-## the time spent running the example, only the first 26 rows of the table are
-## used. The user should drop the '[1:26, ]' part if they plan on using this
+## the time spent running the example, only the first 13 rows of the table are
+## used. The user should drop the '[1:13, ]' part if they plan on using this
 ## example as a starting point for putting sequences into a database.
-genomesTable <- read.csv(genomesFile, stringsAsFactors=FALSE)[1:26, ]
+genomesTable <- read.csv(relGenomesFile, stringsAsFactors=FALSE)[1:13, ]
 ftps <- genomesTable$GenBank.FTP
 ftps <- paste(ftps, paste0(basename(ftps), "_genomic.fna.gz"), sep="/")
 ftps <- ftps[which(substring(ftps, 1, 6)=="ftp://")]
@@ -159,14 +159,15 @@ for (pIdx in seq_along(pass)) {
 ## This vector contains the list of identifers for the genomes in the database,
 ## based on which ones were successfully added. Identifers are character
 ## strings. The first one, identifier "1", corresponds to the central genome.
-## The remaining identifers, in this case "2":"26", correspond to the related
+## The remaining identifers, in this case "2":"13", correspond to the related
 ## genomes.
 identifiers <- as.character(which(pass))
 
+## Disconnect from the database.
 dbDisconnect(dbConn)
 ```
 
-In the example above, a set of Adenoviridae genomes from NCBI was used as the source for both the central genome and the related genomes. Human adenovirus 1 is the strain of interest here, and its genome serves the central genome (identifier 1). The remaining genomes in the set serve as the related genomes (identifiers 2 - 26). Please note that the package is only intended to be used with prokaryotes. Viruses are used in some examples in the package because manipulations with viral genomes run much faster than those with prokaryotic genomes (due to viral genomes being much smaller in size).
+In the example above, a set of Adenoviridae genomes from NCBI was used as the source for both the central genome and the related genomes. Human adenovirus 1 is the strain of interest here, and its genome serves the central genome (identifier 1). The remaining genomes in the set serve as the related genomes (identifiers 2 - 13). Please note that the package is only intended to be used with prokaryotes. Viruses are used in some examples in the package because manipulations with viral genomes run much faster than those with prokaryotic genomes (due to viral genomes being much smaller in size).
 
 The next example shows how to use the `MapAssessmentData` function with the SQL database (and database identifiers) generated in the previous example. Since there is no proteomics data in this instance, `useProt` will be set to `FALSE`.
 
@@ -175,7 +176,7 @@ library(AssessORF)
 
 ## Reminder: the first identifier in the database, in this case identifier "1",
 ## corresponds to the central genome. The remaining identifers, in this case
-## "2":"26", correspond to the related genomes.
+## "2":"13", correspond to the related genomes.
 myMapObj <- MapAssessmentData(dbFile,
                               central_ID = identifiers[1],
                               related_IDs = identifiers[-1],
