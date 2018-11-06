@@ -1,3 +1,9 @@
+# AssessORF 1.0
+
+## Changes in version 1.1.1
+
+* Reduced time it takes to run MapAssessmentData examples
+
 # AssessORF 0.99
 
 ## Changes in version 0.99.19
