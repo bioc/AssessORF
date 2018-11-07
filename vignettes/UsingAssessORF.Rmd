@@ -153,6 +153,8 @@ for (pIdx in seq_along(pass)) {
   
   if (!(is(t, "try-error"))) {
     pass[pIdx] <- TRUE
+  } else {
+    stop(t)
   }
 }
 
