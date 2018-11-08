@@ -4,6 +4,10 @@
 
 * Reduced time it takes to run MapAssessmentData examples
 
+## Changes in version 1.1.2
+
+* Implemented a fix to the vignette so it builds without an internet connection
+
 # AssessORF 0.99
 
 ## Changes in version 0.99.19
