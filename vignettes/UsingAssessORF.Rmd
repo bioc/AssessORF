@@ -144,15 +144,19 @@ ftps <- ftps[which(substring(ftps, 1, 6) == "ftp://")]
 pass <- logical(length(ftps))
 
 ## Add the sequences to the database.
-for (pIdx in seq_along(pass)) {
-  t <- try(Seqs2DB(ftps[pIdx], "FASTA", databaseFile, as.character(pIdx),
-                   compressRepeats=TRUE, verbose=FALSE),
-           silent=TRUE)
-  
-  if (!(is(t, "try-error"))) {
-    pass[pIdx] <- TRUE
-  }
-}
+## The loop can cause timeout errors if there is no internet connection
+## when the package is built so it has been commented out so the example.
+## runs smoothly. Users should uncomment this loop when adapting the
+## example for their own use.
+# for (pIdx in seq_along(pass)) {
+#   t <- try(Seqs2DB(ftps[pIdx], "FASTA", databaseFile, as.character(pIdx),
+#                    compressRepeats=TRUE, verbose=FALSE),
+#            silent=TRUE)
+#   
+#   if (!(is(t, "try-error"))) {
+#     pass[pIdx] <- TRUE
+#   }
+# }
 
 ## This vector contains the list of identifers for the genomes in the database,
 ## based on which ones were successfully added. Identifers are character
