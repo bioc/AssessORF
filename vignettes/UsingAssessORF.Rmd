@@ -96,7 +96,7 @@ After gathering the necessary data, it is time to prepare them for use with the 
 
 For the central genome and the related genomes, use the DECIPHER package to put them into a SQL database. The example below describes the process for putting genomes into a database in situations where NCBI's Genome Browser is used as the source for related genomes. Users are encouraged to adapt this workflow to suit their own needs.
 
-```{r message = FALSE}
+```{r error = FALSE, warning = FALSE, message = FALSE}
 library(DECIPHER)
 
 ## Path to the SQL database file (will be created if necessary)
