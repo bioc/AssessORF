@@ -1,4 +1,4 @@
-# AssessORF 1.0
+# AssessORF 1.1
 
 ## Changes in version 1.1.1
 
@@ -7,6 +7,11 @@
 ## Changes in version 1.1.2
 
 * Implemented a fix to the vignette so it builds without an internet connection
+
+## Changes in version 1.1.3
+
+* Fixed a bug affecting coverage related to gaps in the alignment in MapAssessmentData
+* Used exponential moving averages to filter out bad alignmnets in MapAssessmentData
 
 # AssessORF 0.99
 
