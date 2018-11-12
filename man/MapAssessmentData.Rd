@@ -18,6 +18,8 @@ MapAssessmentData(genomes_DBFile,
                   related_MinDist = 0.01,
                   related_MaxDistantN = 1000,
                   startCodons = c("ATG", "GTG", "TTG"),
+                  ema_AlphaVal = 0.1,
+                  ema_MinVal = 0.5,
                   useProt = TRUE,
                   useCons = TRUE,
                   verbose = TRUE)
@@ -62,6 +64,12 @@ Default value is 1000.}
 \item{startCodons}{A charcter vector consisting of three-letter DNA strings to use as the start codons when finding
 evolutionarily conserved starts.}
 
+\item{ema_AlphaVal}{The alpha value to use when calculating the exponential moving average over an alignment derived
+from a synteny map. Default value is 0.1. Recommended to use the default value.}
+
+\item{ema_MinVal}{The minimum exponential moving average value required for an alignment position to be incorporated
+into the conservation vectors. Default value is 0.5. Recommended to use the default value.}
+
 \item{useProt}{Logical indicating whether or not proteomics evidence should be mapped to the genome.
 Default value is true. Cannot be false if \code{useCons} is false.}
 
@@ -100,11 +108,13 @@ Please note that \code{protHits_IsNTerm} has no affect on how the proteomics evi
 used to affect how genes are assessed and categorized in \code{\link{AssessGenes}}.
 
 Evolutionarily conserved starts and conserved stop are found by first measuring how far the related genomes are from the central
-genome using k-mer frequencies. Next, the most distant related genomes are aligned to the central genome. This provides information
-on how often each position in the central genome is covered by syntenic matches to related genomes (coverage), how often those
-positions correspond to the start codons (start codon conservation) in both genomes, and how often those positions correspond to stop
-codons in related genomes (stop codon conservation). A ratio of conservation to coverage is used in downstream functions to measure
-the strength of both conserved starts and conserved stops.
+genome using k-mer frequencies. Next, synteny is mapped between the central genome and each of the most distant related genomes, and
+alignments are built from those synteny maps. An exponential moving average (EMA) is calculated over the alignment (based on whether
+the central genome is identical to the related genome at that position) to filter out areas of poor alignment. The synteny maps and
+filterd alignments provide information on how often each position in the central genome is covered by syntenic matches to related
+genomes (coverage), how often those positions correspond to the start codons (start codon conservation) in both genomes, and how
+often those positions correspond to stop codons in related genomes (stop codon conservation). A ratio of conservation to coverage is
+used in downstream functions to measure the strength of both conserved starts and conserved stops.
 
 Related genomes should be from species that are closely related to the given strain. \code{related_IDs} specifies the identifiers
 for the sequences of the related genomes inside the database. A related genome identifier (each element of \code{related_IDs}) is
