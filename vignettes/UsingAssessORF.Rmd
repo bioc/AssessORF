@@ -129,7 +129,7 @@ relGenomesFile <- system.file("extdata",
 genomesTable <- read.csv(relGenomesFile, stringsAsFactors = FALSE)[1:13, ]
 ftps <- genomesTable$GenBank.FTP
 ftps <- paste(ftps, paste0(basename(ftps), "_genomic.fna.gz"), sep="/")
-ftps <- ftps[which(substring(ftps, 1, 6) == "ftp://")]
+ftps <- ftps[(substring(ftps, 1, 6) == "ftp://")]
 
 ## In this example, the first genome in the table is the central genome.
 ## In most user scenarios however, the path to the central genome will not be in

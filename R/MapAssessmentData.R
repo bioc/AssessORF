@@ -731,21 +731,42 @@ MapAssessmentData <- function(genomes_DBFile,
       for (iIdx in seq_len(length(currAlignSeq) / 2)) {
         currRange <- synteny[2,1][[1]][iIdx, "start1"]:synteny[2,1][[1]][iIdx, "end1"]
         
-        ## Positions in the central genome are only covered if they correspond
-        ## to non-gap alignment positions in both genomes.
-        covRange <- currRange[which((currAlignSeq[[(iIdx * 2) - 1]] != "-") &
-                                      (currAlignSeq[[iIdx * 2]] != "-"))]
-        
-        ## Add to the coverage.
-        fwdCov[covRange] <- fwdCov[covRange] + 1L
-        revCov[genomeLen - covRange + 1] <- revCov[genomeLen - covRange + 1] + 1L
-        
         ## --------------------------------------------------------------------------- ##
         
         ## Get the non-gap alignment positions for the central genome.
         ## This serves as the basis for determing the central genome triplets
         ## and the related genome triplets that are aligned to them.
         nonGapPos <- which(currAlignSeq[[(iIdx * 2) - 1]] != "-")
+        
+        ## --------------------------------------------------------------------------- ##
+        
+        ## Determine which codons in the central genome alignment are identical
+        ## to corresponding codons in the related genome alignment.
+        areIdentical <- (currAlignSeq[[(iIdx * 2) - 1]][nonGapPos]) ==
+          (currAlignSeq[[iIdx * 2]][nonGapPos])
+        
+        currLen <- length(areIdentical)
+        
+        ## Calculate the exponential moving average in both directions.
+        leadAvg <- trailAvg <- numeric(currLen)
+        
+        leadAvg[1] <- areIdentical[1]
+        trailAvg[currLen] <- areIdentical[currLen]
+        
+        for (pIdx_Lead in seq(from = 2, to = currLen, by = 1)) {
+          leadAvg[pIdx_Lead] <- (ema_AlphaVal * areIdentical[pIdx_Lead]) +
+            ((1 - ema_AlphaVal) * leadAvg[pIdx_Lead - 1])
+          
+          pIdx_Trail <- currLen - (pIdx_Lead - 1L)
+          
+          trailAvg[pIdx_Trail] <- (ema_AlphaVal * areIdentical[pIdx_Trail]) +
+            ((1 - ema_AlphaVal) * trailAvg[pIdx_Trail + 1])          
+        }
+        
+        ## Average the two moving average vectors together.
+        centerAvg <- (leadAvg + trailAvg) / 2
+        
+        ## --------------------------------------------------------------------------- ##
         
         ## Get the first, second, and third position for each possible triplet.
         pos1 <- nonGapPos[-c(length(nonGapPos) - 1, length(nonGapPos))]
@@ -775,44 +796,30 @@ MapAssessmentData <- function(genomes_DBFile,
         
         ## --------------------------------------------------------------------------- ##
         
-        ## Determine which codons in the central genome alignment are identical
-        ## to corresponding codons in the related genome alignment.
-        areIdentical <- (centralCodons == relatedCodons) &
-          (!(is.na(centralCodons))) &
-          (!(is.na(relatedCodons)))
+        ## Positions in the central genome are only covered if they correspond
+        ## to valid (non-gap) codons in the related genome alignment sequence
+        ## AND if the "center point" moving average is greater than the
+        ## threshold at that position.
+        covRange <- currRange[((relatedCodons %in% names(GENETIC_CODE)) &
+                                 (centerAvg >= ema_MinVal))]
         
-        currLen <- length(centralCodons)
-        
-        ## Calculate the exponential moving average for the forward strand.
-        ## This is opposite to the reading direction because gene starts need to
-        ## score highly and intergenic space is not expected to be conserved.
-        trailAvg <- numeric(currLen)
-        
-        trailAvg[currLen] <- as.integer(areIdentical[currLen])
-        
-        for (pIdx in seq(from = currLen - 1, to = 1, by = 1)) {
-          trailAvg[pIdx] <- (ema_AlphaVal * as.integer(areIdentical[pIdx])) +
-            ((1 - ema_AlphaVal) * trailAvg[pIdx + 1])
-        }
-        
-        ## Do the same for the reverse strand.
-        leadAvg <- numeric(currLen)
-        
-        leadAvg[1] <- as.integer(areIdentical[1])
-        
-        for (pIdx in seq(from = 2, to = currLen, by = 1)) {
-          leadAvg[pIdx] <- (ema_AlphaVal * as.integer(areIdentical[pIdx])) +
-            ((1 - ema_AlphaVal) * leadAvg[pIdx - 1])
-        }
+        ## Add to the coverage.
+        fwdCov[covRange] <- fwdCov[covRange] + 1L
+        revCov[genomeLen - covRange + 1] <- revCov[genomeLen - covRange + 1] + 1L
         
         ## --------------------------------------------------------------------------- ##
+        
+        ## Positions in the central genome can only be conserved if they are
+        ## also covered. This is applied to finding start and stop codons in
+        ## both forward and reverse directions (based on the first triplet
+        ## position).
         
         ## Forward conserved starts
         areStarts <- which((centralCodons %in% startCodons) &
                              (relatedCodons %in% startCodons))
         
         if (length(areStarts) > 0) {
-          validPos <- areStarts[which(trailAvg[areStarts] >= ema_MinVal)]
+          validPos <- areStarts[(areStarts %in% covRange)]
           
           if (length(validPos) > 0) {
             fwdConStarts[currRange[validPos]] <- fwdConStarts[currRange[validPos]] + 1L
@@ -824,7 +831,7 @@ MapAssessmentData <- function(genomes_DBFile,
                              (relatedCodons %in% revCompStartCodons))
         
         if (length(areStarts) > 0) {
-          validPos <- areStarts[which(leadAvg[areStarts] >= ema_MinVal)]
+          validPos <- areStarts[(areStarts %in% covRange)]
           
           if (length(validPos) > 0) {
             revConStarts[genomeLen - currRange[validPos] - 1] <-
@@ -836,15 +843,23 @@ MapAssessmentData <- function(genomes_DBFile,
         hasStop <- which(relatedCodons %in% stopCodons)
         
         if (length(hasStop) > 0){
-          fwdConStops[currRange[hasStop]] <- fwdConStops[currRange[hasStop]] + 1L
+          validPos <- hasStop[(hasStop %in% covRange)]
+          
+          if (length(validPos) > 0) {
+            fwdConStops[currRange[validPos]] <- fwdConStops[currRange[validPos]] + 1L
+          }
         }
         
         ## Reverse conserved stops
         hasStop <- which(relatedCodons %in% revCompStopCodons)
         
         if (length(hasStop) > 0){
-          revConStops[genomeLen - currRange[hasStop] - 1] <-
-            revConStops[genomeLen - currRange[hasStop] - 1] + 1L
+          validPos <- hasStop[(hasStop %in% covRange)]
+          
+          if (length(validPos) > 0) {
+            revConStops[genomeLen - currRange[validPos] - 1] <-
+              revConStops[genomeLen - currRange[validPos] - 1] + 1L
+          }
         }
       }
       
