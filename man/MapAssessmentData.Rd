@@ -19,7 +19,7 @@ MapAssessmentData(genomes_DBFile,
                   related_MaxDistantN = 1000,
                   startCodons = c("ATG", "GTG", "TTG"),
                   ema_AlphaVal = 0.1,
-                  ema_MinVal = 0.5,
+                  ema_MinVal = 0.6,
                   useProt = TRUE,
                   useCons = TRUE,
                   verbose = TRUE)
@@ -68,7 +68,7 @@ evolutionarily conserved starts.}
 from a synteny map. Default value is 0.1. Recommended to use the default value.}
 
 \item{ema_MinVal}{The minimum exponential moving average value required for an alignment position to be incorporated
-into the conservation vectors. Default value is 0.5. Recommended to use the default value.}
+into the conservation vectors. Default value is 0.6. Recommended to use the default value.}
 
 \item{useProt}{Logical indicating whether or not proteomics evidence should be mapped to the genome.
 Default value is true. Cannot be false if \code{useCons} is false.}
