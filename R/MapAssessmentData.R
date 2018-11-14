@@ -477,17 +477,17 @@ MapAssessmentData <- function(genomes_DBFile,
   stopsByFrame <- vector("list", 6)
   
   for (frame in seq_along(fwdFrameAA)) {
-    currAlignSeq <- vmatchPattern("*", fwdFrameAA[[frame]])
-    currAlignSeq <- unlist(startIndex(currAlignSeq))
-    currAlignSeq <- (currAlignSeq - 1)*3 + frame
-    stopsByFrame[[frame]] <- currAlignSeq
+    currMatch <- vmatchPattern("*", fwdFrameAA[[frame]])
+    currMatch <- unlist(startIndex(currMatch))
+    currMatch <- (currMatch - 1)*3 + frame
+    stopsByFrame[[frame]] <- currMatch
   }
   
   for (frame in seq_along(revFrameAA)) {
-    currAlignSeq <- vmatchPattern("*", revFrameAA[[frame]])
-    currAlignSeq <- unlist(startIndex(currAlignSeq))
-    currAlignSeq <- (currAlignSeq - 1)*3 + frame
-    stopsByFrame[[frame + 3]] <- currAlignSeq
+    currMatch <- vmatchPattern("*", revFrameAA[[frame]])
+    currMatch <- unlist(startIndex(currMatch))
+    currMatch <- (currMatch - 1)*3 + frame
+    stopsByFrame[[frame + 3]] <- currMatch
   }
   
   ## --------------------------------------------------------------------------------------------------------------- ##
@@ -689,7 +689,7 @@ MapAssessmentData <- function(genomes_DBFile,
     
     ## --------------------------------------------------------------------------------------------------------------- ##
     
-    ## Set up conservation and coverage vectors.
+    ## Set up the conservation vectors.
     
     gPos <- seq_len(genomeLen - 2)
     
@@ -753,17 +753,19 @@ MapAssessmentData <- function(genomes_DBFile,
         leadAvg[1] <- areIdentical[1]
         trailAvg[currLen] <- areIdentical[currLen]
         
-        for (pIdx_Lead in seq(from = 2, to = currLen, by = 1)) {
+        for (pIdx_Lead in seq(2,  currLen, by = 1)) {
+          ## Leading average
           leadAvg[pIdx_Lead] <- (ema_AlphaVal * areIdentical[pIdx_Lead]) +
             ((1 - ema_AlphaVal) * leadAvg[pIdx_Lead - 1])
           
+          ## Trailing average
           pIdx_Trail <- currLen - (pIdx_Lead - 1L)
           
           trailAvg[pIdx_Trail] <- (ema_AlphaVal * areIdentical[pIdx_Trail]) +
             ((1 - ema_AlphaVal) * trailAvg[pIdx_Trail + 1])          
         }
         
-        ## Average the two moving average vectors together.
+        ## Get the mean of the two moving average vectors.
         centerAvg <- (leadAvg + trailAvg) / 2
         
         ## --------------------------------------------------------------------------- ##
@@ -800,8 +802,10 @@ MapAssessmentData <- function(genomes_DBFile,
         ## to valid (non-gap) codons in the related genome alignment sequence
         ## AND if the "center point" moving average is greater than the
         ## threshold at that position.
-        covRange <- currRange[((relatedCodons %in% names(GENETIC_CODE)) &
-                                 (centerAvg >= ema_MinVal))]
+        relNoGap <- (relatedCodons %in% names(GENETIC_CODE))
+        avgAboveT <- (centerAvg[seq(1, length(centerAvg) - 2, by = 1)] >= ema_MinVal)
+        
+        covRange <- currRange[which(relNoGap & avgAboveT)]
         
         ## Add to the coverage.
         fwdCov[covRange] <- fwdCov[covRange] + 1L
@@ -815,8 +819,8 @@ MapAssessmentData <- function(genomes_DBFile,
         ## position).
         
         ## Forward conserved starts
-        areStarts <- which((centralCodons %in% startCodons) &
-                             (relatedCodons %in% startCodons))
+        areStarts <- currRange[which((centralCodons %in% startCodons) &
+                                       (relatedCodons %in% startCodons))]
         
         if (length(areStarts) > 0) {
           validPos <- areStarts[(areStarts %in% covRange)]
@@ -827,8 +831,8 @@ MapAssessmentData <- function(genomes_DBFile,
         }
         
         ## Reverse conserved starts
-        areStarts <- which((centralCodons %in% revCompStartCodons) &
-                             (relatedCodons %in% revCompStartCodons))
+        areStarts <- currRange[which((centralCodons %in% revCompStartCodons) &
+                                       (relatedCodons %in% revCompStartCodons))]
         
         if (length(areStarts) > 0) {
           validPos <- areStarts[(areStarts %in% covRange)]
@@ -840,7 +844,7 @@ MapAssessmentData <- function(genomes_DBFile,
         }
         
         ## Forward conserved stops
-        hasStop <- which(relatedCodons %in% stopCodons)
+        hasStop <- currRange[which(relatedCodons %in% stopCodons)]
         
         if (length(hasStop) > 0){
           validPos <- hasStop[(hasStop %in% covRange)]
@@ -851,7 +855,7 @@ MapAssessmentData <- function(genomes_DBFile,
         }
         
         ## Reverse conserved stops
-        hasStop <- which(relatedCodons %in% revCompStopCodons)
+        hasStop <- currRange[which(relatedCodons %in% revCompStopCodons)]
         
         if (length(hasStop) > 0){
           validPos <- hasStop[(hasStop %in% covRange)]
