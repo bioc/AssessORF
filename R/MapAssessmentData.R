@@ -826,7 +826,7 @@ MapAssessmentData <- function(genomes_DBFile,
           validPos <- areStarts[(areStarts %in% covRange)]
           
           if (length(validPos) > 0) {
-            fwdConStarts[currRange[validPos]] <- fwdConStarts[currRange[validPos]] + 1L
+            fwdConStarts[validPos] <- fwdConStarts[validPos] + 1L
           }
         }
         
@@ -838,8 +838,8 @@ MapAssessmentData <- function(genomes_DBFile,
           validPos <- areStarts[(areStarts %in% covRange)]
           
           if (length(validPos) > 0) {
-            revConStarts[genomeLen - currRange[validPos] - 1] <-
-              revConStarts[genomeLen - currRange[validPos] - 1] + 1L
+            revConStarts[genomeLen - validPos - 1] <-
+              revConStarts[genomeLen - validPos - 1] + 1L
           }
         }
         
@@ -850,7 +850,7 @@ MapAssessmentData <- function(genomes_DBFile,
           validPos <- hasStop[(hasStop %in% covRange)]
           
           if (length(validPos) > 0) {
-            fwdConStops[currRange[validPos]] <- fwdConStops[currRange[validPos]] + 1L
+            fwdConStops[validPos] <- fwdConStops[validPos] + 1L
           }
         }
         
@@ -861,8 +861,8 @@ MapAssessmentData <- function(genomes_DBFile,
           validPos <- hasStop[(hasStop %in% covRange)]
           
           if (length(validPos) > 0) {
-            revConStops[genomeLen - currRange[validPos] - 1] <-
-              revConStops[genomeLen - currRange[validPos] - 1] + 1L
+            revConStops[genomeLen - validPos - 1] <-
+              revConStops[genomeLen - validPos - 1] + 1L
           }
         }
       }
