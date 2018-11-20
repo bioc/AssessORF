@@ -52,7 +52,7 @@ and evolutionarily conserved start & stop codons as evidence to determine the co
     \item{\code{GeneSource}}{The source of the given set of genes}
     \item{\code{NumGenes}}{Number of genes given}
     \item{\code{N_CS-_PE+_ORFs}}{Data for open reading frames with no gene start but with proteomics evidence}
-    \item{\code{N_CS+_PE+_ORFs}}{Data for open reading frames with no gene start but with proteomics evidence and at least one
+    \item{\code{N_CS<_PE+_ORFs}}{Data for open reading frames with no gene start but with proteomics evidence and at least one
     valid evolutionarily conserved start}
     \item{\code{CategoryAssignments}}{A character vector that stores the category assignment for each of the given genes in the
     same order as the gene information (please see below for a list of all possible categories, their descriptions, and their
