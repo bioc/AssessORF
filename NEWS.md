@@ -13,6 +13,13 @@
 * Fixed a bug affecting coverage related to gaps in alignments in MapAssessmentData
 * Used exponential moving averages to filter out bad alignment regions in MapAssessmentData
 
+## Changes in version 1.1.4
+
+* Updated AssessGenes to make sure predicted stops are valid for their corresponding genes
+  * Users will be warned appropriately if a predicted stop is invalid
+* Minor updates to plots
+* Bug fixes on previous version's MapAssessmentData updates
+
 # AssessORF 0.99
 
 ## Changes in version 0.99.19

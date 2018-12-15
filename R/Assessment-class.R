@@ -432,7 +432,7 @@ plot.Assessment <- function(x, y = NULL,
     par(mfrow=c(1,1), mar = c(6, 4, 6, 2))
     
     barplot(allCatSums, las = 2, ylim = c(0, currYMax),
-            col = catColors,
+            col = catColors, col.lab = "black",
             family = "mono")
     
     title(main = plotTitle, line = 5)
@@ -531,12 +531,13 @@ mosaicplot.Assessment <- function(x, ...) {
     
     quantBins <- quantile(geneLengths, seq(0, 1, 0.1))
     
-    catByLenTable <- table(cut(geneLengths, quantBins), names(geneLengths))
+    catByLenTable <- table(cut(geneLengths, quantBins, dig.lab = 5),
+                           names(geneLengths))
     
     catCodeNames <- c("Y CS+ PE+", "Y CS+ PE-", "Y CS- PE+", "Y CS- PE-",
                       "Y CS< PE!", "Y CS- PE!", "Y CS! PE+", "Y CS! PE-",
                       "Y CS> PE+", "Y CS> PE-", "Y CS< PE+", "Y CS< PE-",
-                      "N CS< PE+", "N CS- PE+", "Y CS> PE!")
+                      "N CS< PE+", "N CS- PE+")
     
     catColors <- c("darkgreen", "lightgreen", "lightgreen", "white",
                    "darkred", "indianred1", "indianred1", "indianred1",
@@ -551,6 +552,7 @@ mosaicplot.Assessment <- function(x, ...) {
     
     catColors <- catColors[usedCats]
     
+    par(col.lab = "black", family = "mono")
     plot(catByLenTable[, catCodeNames], main = plotTitle, col = catColors, las = 1)
     
   } else {

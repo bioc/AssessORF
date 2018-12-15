@@ -6,7 +6,7 @@
 \description{
 In order to assess the quality of a set of (predicted) genes for a genome, evidence must first be mapped to that genome.
 Next, each gene must be categorized based on how strong the evidence is for that gene or against that gene. Class \code{Assessment}
-furnishes objects that can store the neccesary information for assessing a set of genes for a genome and also provides
+furnishes objects that can store the necessary information for assessing a set of genes for a genome and also provides
 functions for viewing and visualizing assessment information. Specifically, class \code{Assessment} objects utilize proteomic hits
 and evolutionarily conserved start & stop codons as evidence to determine the correctness for each gene in a given set.
 }

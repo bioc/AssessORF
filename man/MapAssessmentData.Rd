@@ -61,7 +61,7 @@ Default value is 0.01. Recommended to use the default value.}
 related genomes have been sorted from most distantly related to most closely related in relation to the central genome.
 Default value is 1000.}
 
-\item{startCodons}{A charcter vector consisting of three-letter DNA strings to use as the start codons when finding
+\item{startCodons}{A character vector consisting of three-letter DNA strings to use as the start codons when finding
 evolutionarily conserved starts.}
 
 \item{ema_AlphaVal}{The alpha value to use when calculating the exponential moving average over an alignment derived
@@ -104,7 +104,7 @@ Only proteomics hits with a score greater than the value of the percentile that 
 will be kept and the rest of the hits will be dropped. If all the proteomics hits have the same score or if \code{protHits_Threshold}
 is zero, no thresholding will occur and no hits will be dropped.
 
-Please note that \code{protHits_IsNTerm} has no affect on how the proteomics evidence is mapped to the central genome but it can be
+Please note that \code{protHits_IsNTerm} has no effect on how the proteomics evidence is mapped to the central genome but it can be
 used to affect how genes are assessed and categorized in \code{\link{AssessGenes}}.
 
 Evolutionarily conserved starts and conserved stop are found by first measuring how far the related genomes are from the central

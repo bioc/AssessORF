@@ -15,7 +15,7 @@ AssessGenes(geneLeftPos,
             limConCovRatio_NotCon = 0.8,
             minConCovRatio_Stop = 0.5,
             noConStopsGeneFrac = 0.5,
-            minNumStops = 2,
+            minNumStops = 1,
             minMissORFLen = 0,
             allowNestedORFs = FALSE,
             useNTermProt = FALSE,
@@ -110,7 +110,7 @@ the genes are valid for the genome.
 The maximum of either \code{minCovNum} or (\code{minCovPct}/100) multiplied by the number of related genomes is used as
 the minimum coverage required in determining conserved starts and stops.
 
-Additionaly, open reading frames with proteomics evidence but no gene start are categorized based on whether or not there
+Additionally, open reading frames with proteomics evidence but no gene start are categorized based on whether or not there
 is a conserved start upstream of the proteomic evidence. The positions and lengths of these open reading frames is included
 in the \code{N_CS-_PE+_ORFs} and \code{N_CS+_PE+_ORFs} matrices within the final object that is returned.
 }
