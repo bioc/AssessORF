@@ -30,7 +30,7 @@ and evolutionarily conserved start & stop codons as evidence to determine the co
     \item{\code{RevCoverage}}{Coverage of the reverse strand of the central genome}
     \item{\code{RevConStarts}}{Start codon conservation of the reverse strand of the central genome}
     \item{\code{RevConStops}}{Stop codon conservation of the reverse strand of the central genome}
-    \item{\code{NumRelatedGenomes}}{Number of related genomes that were mapped to the central genome}
+    \item{\code{NumRelatedGenomes}}{Final number of related genomes that were mapped to the central genome}
     \item{\code{HasProteomics}}{Logical describing whether or not proteomics evidence has been mapped to the central genome}
     \item{\code{HasConservation}}{Logical describing whether or not evolutionary conservation evidence has been mapped to the central genome}
   }

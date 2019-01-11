@@ -1,6 +1,6 @@
 ---
 title: "Using AssessORF"
-shorttitle: "Using AsessORF"
+shorttitle: "Using AssessORF"
 author: "Deepank Korandla"
 date: "`r doc_date()`"
 package: "`r pkg_ver('AssessORF')`"
@@ -17,7 +17,7 @@ In genomics pipelines, a newly sequenced genome must be annotated before it can 
 
 ## Why Proteomics?
 
-One of the direct products of coding genes are proteins, so mapping real protein fragments back to the corresponding genome can provide a rough guide as to where the genes are within a genome. In other words, aligning peptide sequences to a genome can prove which genes from a set of predicted genes are definitively real as well as show which genes have starts that do not agree with the protein evidence. Protein evidence contradicts a gene start specifically when there are protein hits in the same open reading frame (ORF) that are directly upstream of or overlapping the start. Additionally, protein evidence to ORFs without a predicted gene can point towards the existence of potential genes missed by the gene finding program. The data from proteomics experiments focused on sequencing the complete set of proteins of an organism is thus highly useful in assessing the quality of a set of predicted genes for that organism.
+One of the direct products of coding genes are proteins, so mapping real protein fragments back to the corresponding genome can provide a rough guide as to where the genes are within a genome. In other words, aligning peptide sequences to a genome can prove which genes from a set of predicted genes are definitively real as well as show which genes have starts that do not agree with the protein evidence. Protein evidence contradicts a gene start specifically when there are protein hits in the same open reading frame (ORF) that are directly upstream of or overlapping the start. Additionally, protein evidence in ORFs without a predicted gene can point towards the existence of potential genes missed by the gene finding program. The data from proteomics experiments focused on sequencing the complete set of proteins of an organism is thus highly useful in assessing the quality of a set of predicted genes for that organism.
 
 ## Why Evolutionary Conservation?
 
@@ -229,8 +229,6 @@ myMapObj <- MapAssessmentData(databaseFile, ## File path to the SQL database con
 Below is an example of how to use the `AssessGenes` function, using the pre-saved mapping object for *Streptococcus pyogenes* MGAS5005 and the corresponding set of Prodigal-predicted genes.
 
 ```{r results = FALSE}
-library(AssessORF)
-
 currMapObj <- readRDS(system.file("extdata",
                                   "MGAS5005_PreSaved_DataMapObj.rds",
                                   package = "AssessORF"))
@@ -258,8 +256,6 @@ The results object contains the assigned category for each predicted gene, which
 
 Printing the results object prints out the number of genes in each category as well as the accuracy scores for the set of predicted genes:
 ```{r}
-library(AssessORF)
-
 print(currResObj)
 ```
 
@@ -267,8 +263,6 @@ print(currResObj)
 
 Plotting the results object shows the number of genes in each category in bar chart format:
 ```{r fig.height=7, fig.width=7, fig.align="center"}
-library(AssessORF)
-
 plot(currResObj)
 ```
 
@@ -276,8 +270,6 @@ plot(currResObj)
 
 It is also possible to do a mosaic plot of the results object. The mosaic plot shows how the distribution of categories varies by gene length:
 ```{r fig.height=15, fig.width=15, fig.align="center"}
-library(AssessORF)
-
 mosaicplot(currResObj)
 ```
 

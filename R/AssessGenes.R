@@ -15,11 +15,10 @@
 #'             geneSource = "",
 #'             minCovNum = 10,
 #'             minCovPct = 5,
-#'             minConCovRatio_Best = 0.99,
+#'             minConCovRatio_Strong = 0.99,
 #'             limConCovRatio_NotCon = 0.8,
 #'             minConCovRatio_Stop = 0.5,
 #'             noConStopsGeneFrac = 0.5,
-#'             minNumStops = 1,
 #'             minMissORFLen = 0,
 #'             allowNestedORFs = FALSE,
 #'             useNTermProt = FALSE,
@@ -47,7 +46,7 @@
 #' @param minCovPct Minimum percentage of related genomes required to have synteny to a position in the central genome.
 #' Must be an integer ranging from 0 to 100. Recommended to use the default value.
 #'
-#' @param minConCovRatio_Best Minimum value of the start codon conservation to coverage ratio needed to call a start conserved.
+#' @param minConCovRatio_Strong Minimum value of the start codon conservation to coverage ratio needed to call a start strongly conserved.
 #' Must range from 0 to 1. Lower values allow more conserved starts through. Recommended to use the default value.
 #' 
 #' @param limConCovRatio_NotCon Maximum, non-inclusive value of the conservation to coverage ratio needed to call a possible conserved
@@ -63,18 +62,16 @@
 #' first quarter of the gene is checked for conserved stops, a value of 0.5 correspond to the first half of the gene, etc. Recommended
 #' to use the default value.
 #' 
-#' @param minNumStops Minimum number of conserved stop positions required to be within a gene (with no mapped proteomics hits)
-#' in order to categorize that gene as an overprediction. Recommended to use the default value.
+#' @param minMissORFLen Minimum ORF length required to include an ORF with protein hits
+#' but no given/predicted gene start in the final output.
 #' 
-#' @param minMissORFLen Minimum ORF length required to include an ORF with protein hits but no gene start in the final results.
-#' 
-#' @param allowNestedORFs Logical indicating whether or not to include ORFs with protein hits but no gene starts that are
-#' completely nested within an ORF in another frame in the final results.
+#' @param allowNestedORFs Logical indicating whether or not to include ORFs with protein hits but no given/predicted
+#' gene starts that are completely nested within an ORF in another frame in the final output.
 #'
 #' @param verbose Logical indicating whether or not to display progress and status messages.
 #' 
-#' @param useNTermProt Logical indicating whether or not to require the given gene starts to align with (or be one codon off from)
-#' the start of the first proteomics hit in the ORF. The mapping object must be built with N-terminal proteomics data.
+#' @param useNTermProt Logical indicating whether or not to treat proteomics evidence in the given mapping object as originating
+#' from N-terminal proteomics experiments. The mapping object must be built with N-terminal proteomics data.
 #' Default value is FALSE.
 #'
 #' @details
@@ -89,26 +86,35 @@
 #' within the \code{GRanges} object.
 #' 
 #' If gene positional information is instead given as three vectors, then the three vectors, \code{geneLeftPos}, \code{geneRightPos},
-#' and \code{geneStrand}, must all be of the same length. Using the same index with each vector must provide information on the same
-#' gene (think of the vectors as columns of the same table). \code{geneLeftPos} and \code{geneRightPos} describe the upstream and
-#' downstream positions (respectively) for each gene in terms of the forward strand. For genes on the forward strand, \code{geneLeftPos}
-#' corresponds to the start positions and \code{geneRightPos} corresponds to stop positions. For genes on the reverse strand,
-#' \code{geneLeftPos} corresponds to the stop positions and \code{geneRightPos} corresponds to the start positions. Gene positions on the
-#' reverse strand must be relative to the 5' to 3' direction of the forward strand (as opposed to being relative to the 5' to 3' direction
-#' of the reverse strand). This means that none of the elements of \code{geneLeftPos} can be greater than (or equal to) the corresponding
-#' element in \code{geneRightPos}. The \code{CategoryAssignments} in the returned \code{Results} object has the same length as and aligns
-#' with the indexing of the three given gene positional information vectors. 
+#' and \code{geneStrand}, must all be of the same length. The same index within each vector must provide information on the same gene
+#' (think of the vectors as columns of the same table). \code{geneLeftPos} and \code{geneRightPos} describe the upstream and downstream
+#' positions (respectively) for each gene in terms of the forward strand. For genes on the forward strand, \code{geneLeftPos} corresponds
+#' to the start positions and \code{geneRightPos} corresponds to stop positions. For genes on the reverse strand, \code{geneLeftPos}
+#' corresponds to the stop positions and \code{geneRightPos} corresponds to the start positions. Gene positions on the reverse strand
+#' must be relative to the 5' to 3' direction of the forward strand (as opposed to being relative to the 5' to 3' direction of the reverse
+#' strand). This means that none of the elements of \code{geneLeftPos} can be greater than (or equal to) the corresponding element in
+#' \code{geneRightPos}. The \code{CategoryAssignments} in the returned \code{Results} object has the same length as and aligns with the
+#' indexing of the three given gene positional information vectors. 
 #'
 #' Please ensure that the same genome used in the mapping function is also used to derive the set of genes for this assessment function.
 #' The function will only error if any gene positions are outside the bounds of the genome and does not make any other checks to make sure
 #' the genes are valid for the genome.
 #'
-#' The maximum of either \code{minCovNum} or (\code{minCovPct}/100) multiplied by the number of related genomes is used as
-#' the minimum coverage required in determining conserved starts and stops.
+#' The maximum of either \code{minCovNum} (option 1) or \code{minCovPct} divided 100 then multiplied by the number of related genomes
+#' (option 2) is used as the minimum coverage required in determining conserved starts and stops.
 #' 
 #' Additionally, open reading frames with proteomics evidence but no gene start are categorized based on whether or not there
-#' is a conserved start upstream of the proteomic evidence. The positions and lengths of these open reading frames is included
+#' is a conserved start upstream of the proteomic evidence. The positions and lengths of these open reading frames are included
 #' in the \code{N_CS-_PE+_ORFs} and \code{N_CS+_PE+_ORFs} matrices within the final object that is returned.
+#' 
+#' If the proteomics evidence provided in the given mapping object comes from N-terminal proteomics experiments (i.e., if the value of
+#' the \code{NTermProteomics} item within the mapping object is TRUE), the \code{useNTermProt} can be set to TRUE to impose stricter
+#' requirements on the use of proteomics evidence in determining the correctness of the given genes. When \code{useNTermProt} is set to
+#' TRUE, the start of first peptide mapping to an ORF where there is a given gene must directly align with the start of that gene or be
+#' one codon off from the start (in cases where the protein product of the gene has undergone N-terminal methionine excision) in order for
+#' the gene to be considered as having supporting protein evidence. If the first peptide hit does not align like that, the gene is
+#' considered as having disproving protein evidence. Currently, N-terminal proteomics does not produce enough N-terminal peptides so
+#' setting this flag as TRUE does not provide meaningful results. It is recommended to leave this flag as FALSE in all situations.
 #'
 #' @return An object of class \code{Assessment} and subclass \code{Results}
 #' 
@@ -147,6 +153,8 @@
 #'                           inputMapObj = currMapObj,
 #'                           geneSource = "Prodigal")
 #'
+#' print(currResObj)
+#'
 AssessGenes <- function(geneLeftPos,
                         geneRightPos = NA_integer_,
                         geneStrand = NA_character_,
@@ -154,11 +162,10 @@ AssessGenes <- function(geneLeftPos,
                         geneSource = "",
                         minCovNum = 10L,
                         minCovPct = 5L,
-                        minConCovRatio_Best = 0.99,
+                        minConCovRatio_Strong = 0.99,
                         limConCovRatio_NotCon = 0.8,
                         minConCovRatio_Stop = 0.5,
                         noConStopsGeneFrac = 0.5,
-                        minNumStops = 1L,
                         minMissORFLen = 0L,
                         allowNestedORFs = FALSE,
                         useNTermProt = FALSE,
@@ -287,16 +294,16 @@ AssessGenes <- function(geneLeftPos,
          "non-negative integer that is greater than 0 and less than 100 (both inclusive).")
   }
   
-  if ((!is.numeric(minConCovRatio_Best)) || (anyNA(minConCovRatio_Best))) {
-    stop("'minConCovRatio_Best' must be a valid real number.")
+  if ((!is.numeric(minConCovRatio_Strong)) || (anyNA(minConCovRatio_Strong))) {
+    stop("'minConCovRatio_Strong' must be a valid real number.")
   }
   
-  if (length(minConCovRatio_Best) != 1) {
-    stop("'minConCovRatio_Best' must consist of exactly one number.")
+  if (length(minConCovRatio_Strong) != 1) {
+    stop("'minConCovRatio_Strong' must consist of exactly one number.")
   }
   
-  if ((minConCovRatio_Best <= 0) || (minConCovRatio_Best >= 1)) {
-    stop("'minConCovRatio_Best' must be greater than 0 and less than 1.")
+  if ((minConCovRatio_Strong <= 0) || (minConCovRatio_Strong >= 1)) {
+    stop("'minConCovRatio_Strong' must be greater than 0 and less than 1.")
   }
   
   if ((!is.numeric(limConCovRatio_NotCon)) || (anyNA(limConCovRatio_NotCon))) {
@@ -333,18 +340,6 @@ AssessGenes <- function(geneLeftPos,
   
   if ((noConStopsGeneFrac <= 0) || (noConStopsGeneFrac >= 1)) {
     stop("'noConStopsGeneFrac' must be greater than 0 and less than 1.")
-  }
-  
-  if ((!is.numeric(minNumStops))  || (anyNA(minNumStops))) {
-    stop("'minNumStops must be a valid real number.")
-  }
-  
-  if (length(minNumStops) != 1) {
-    stop("Exactly one number must be inputted for 'minNumStops'.")
-  }
-  
-  if ((minNumStops %% 1 != 0) || (minNumStops <= 0)) {
-    stop("'minNumStops' must be a non-negative integer that is greater than 0.")
   }
   
   if ((!is.numeric(minMissORFLen)) || (anyNA(minMissORFLen))) {
@@ -464,8 +459,7 @@ AssessGenes <- function(geneLeftPos,
   }
   
   ## This function checks if the current ORF is completely within another ORF.
-  ## It is used to filter out some of the ORFs with protein hits and no given
-  ## start.
+  ## It is used to filter out some of the ORFs with protein hits and no given start.
   isNestedORF <- function() {
     currProtHitPos <- regRange[regionalProteinHits]
     
@@ -731,6 +725,12 @@ AssessGenes <- function(geneLeftPos,
         }
       }
       
+      ## Skip the current region if there is no proteomics hit
+      ## or gene start mapping to it.
+      if ((noProt) && (length(regionalPredictedStart) <= 0)) {
+        next()
+      }
+      
       ## If evolutionary conservation is being used in assessement,
       ## find the conserved starts in that region.
       if (useCons) {
@@ -758,22 +758,17 @@ AssessGenes <- function(geneLeftPos,
               ## ... get their scores.
               conStartScores <- strandConservedStarts[conStarts] / strandCoverage[conStarts]
               
-              ## Check if there are any above the conserved start threshold.
-              bestConStartIdxs <- which(conStartScores >= minConCovRatio_Best)
+              ## Check if there are any above the strong conserved start threshold.
+              strongConStartIdxs <- which(conStartScores >= minConCovRatio_Strong)
               
-              if (length(bestConStartIdxs) >= 1) {
-                ## If so, there is at least one valid conserved start.
+              ## If at least one of the scores is above the threshold,
+              ## there is at least one valid conserved start
+              if (length(strongConStartIdxs) >= 1) {
                 noConStarts <- FALSE
               }
             }
           }
         }
-      }
-      
-      ## Skip the current region if there is no proteomics hit
-      ## or gene start mapping to it.
-      if ((noProt) && (length(regionalPredictedStart) <= 0)) {
-        next()
       }
       
       ## If evolutionary conservation is being used in assessement, find the conserved stops
@@ -801,29 +796,21 @@ AssessGenes <- function(geneLeftPos,
           condition2 <- (currConStops < (regionalPredictedStart + (geneLen * noConStopsGeneFrac)))
           
           if (any(condition1 & condition2)) {
-            validConStops <- currConStops[(condition1 & condition2)]
-            
-            ## Get the most downstream conserved stop to check if there is a conserved start downstream.
-            mostDownstreamStop <- max(validConStops)
-            
-            multiStops <- length(validConStops) >= minNumStops
-            
-            conStopConStart <- (!noConStarts) & (any(mostDownstreamStop < conStarts[bestConStartIdxs]))
-            
-            ## If there is no protein evidence and either there are (multiple) valid conserved stops or there is
-            ## a strong conserved start downstream of the stops, put the gene in the conserved stop category.
-            if ((noProt) && (multiStops || conStopConStart)) {
+            ## If there is no protein evidence and there are valid conserved stop(s),
+            ## put the gene in the potential false positive category.
+            if (noProt) {
               ## At least one predicted start in that region
               ## Conserved stops disprove the gene --> "Y CS! PE-"
               catGeneAssignment[geneIdx] <- "Y CS! PE-"
               next()
             }
             
-            ## If there is protein evidence and there is a strong conserved start downstream of the stops,
-            ## put the gene in the conserved stop category.
-            if ((!noProt) && conStopConStart) {
+            ## If there is protein evidence and valid conserved stop(s) upstream,
+            ## put the gene in the wrong start by conserved stop category.
+            if (!noProt) {
               ## At least one predicted start in that region
-              ## Conserved stops disprove the gene --> "Y CS! PE+"
+              ## Protein evidence proves gene's existence
+              ## Conserved stops disprove the gene start --> "Y CS! PE+"
               catGeneAssignment[geneIdx] <- "Y CS! PE+"
               next()
             }
@@ -910,7 +897,7 @@ AssessGenes <- function(geneLeftPos,
       }
       
       ## (Section for categories 4-6)
-      ## There should definitely be good conserved start(s) and a given gene start by this point.
+      ## There should be strong conserved start(s) and a given gene start by this point.
       
       ## Determine which of the all possible conserved starts in the region have bad scores.
       allConStartScores <- strandConservedStarts[allConservedStarts] / strandCoverage[allConservedStarts]
@@ -919,10 +906,15 @@ AssessGenes <- function(geneLeftPos,
       ## Determine which of the conserved starts that are upstream of the protein evidence have bad scores.
       badConStartIdxs <- which(conStartScores < limConCovRatio_NotCon)
       
+      ## Determine which of the conserved starts is the best one (or are the best ones).
+      bestConStartIdx <- which(conStartScores == max(conStartScores))
       
-      ## If there is a good conserved start aligned with the given start,
-      ##  and there is at least one bad conserved start, ...
-      if ((any(conStarts[bestConStartIdxs] == regionalPredictedStart)) && (length(badAllConStartIdxs) >= 1)) {
+      ## If there is only one conserved start with the best score,
+      ## and that strongest conserved start is aligned with the given start,
+      ## and there is at least one bad conserved start somewhere in the region, ...
+      if ((length(bestConStartIdx) == 1) &&
+          (conStarts[bestConStartIdx] == regionalPredictedStart) &&
+          (length(badAllConStartIdxs) >= 1)) {
         ## ..., there is good reason to pick the aligned conserved start as evidence. --> CS+
         
         if (!noProt) {
@@ -936,15 +928,14 @@ AssessGenes <- function(geneLeftPos,
         next()
       }
       
-      ## There is at least one good conserved start somewhere in the region but
-      ## it is not aligned with given start. If there is a bad conserved start
-      ## aligned with the given start, ...
+      ## If there is a bad conserved start aligned with the given start, ... 
       if ((length(badConStartIdxs) >= 1) && (any(conStarts[badConStartIdxs] == regionalPredictedStart))) {
-        ## ... check where the best conserved starts are relative to the given gene start.
-        pickDownstream <- (all(conStarts[bestConStartIdxs] > regionalPredictedStart))
+        ## The strongest conserved starts are somewhere in the region but not aligned with given start.
+        ## Check where the most upstream of the strongest conserved starts is relative to the given start.
+        pickUpstream <- (conStarts[bestConStartIdx[1]] < regionalPredictedStart)
         
-        if (pickDownstream) {
-          ## All the best nearby conserved starts are downstream of the gene start.
+        if (!pickUpstream) {
+          ## All of the strongest conserved starts are downstream of the gene start.
           if (!noProt) {
             ## Protein evidence downstream --> Category 5A, "Y CS> PE+"
             catGeneAssignment[geneIdx] <- "Y CS> PE+"
@@ -953,7 +944,7 @@ AssessGenes <- function(geneLeftPos,
             catGeneAssignment[geneIdx] <- "Y CS> PE-"
           }
         } else {
-          ## At least one of the best nearby conserved starts is upstream of the gene start.
+          ## At least one of the strongest conserved starts is upstream of the gene start.
           if (!noProt) {
             ## Protein evidence downstream --> Category 6A, "Y CS< PE+"
             catGeneAssignment[geneIdx] <- "Y CS< PE+"

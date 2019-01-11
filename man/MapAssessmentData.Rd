@@ -104,8 +104,13 @@ Only proteomics hits with a score greater than the value of the percentile that 
 will be kept and the rest of the hits will be dropped. If all the proteomics hits have the same score or if \code{protHits_Threshold}
 is zero, no thresholding will occur and no hits will be dropped.
 
-Please note that \code{protHits_IsNTerm} has no effect on how the proteomics evidence is mapped to the central genome but it can be
-used to affect how genes are assessed and categorized in \code{\link{AssessGenes}}.
+Please note that the logical parameter \code{protHits_IsNTerm} has no effect on how the proteomics evidence is mapped to the central
+genome but it can be used to affect how genes are assessed and categorized in \code{AssessGenes}. The \code{NTermProteomics} item in
+the outputted object is set to the value of \code{protHits_IsNTerm} (TRUE or FALSE). Users then have the option of requiring that
+\code{AssessGenes} specifically perform N-terminal proteomics assessment when categorizing genes via the \code{useNTermProt} parameter
+to the \code{AssessGenes} function. To summarize, the \code{protHits_IsNTerm} parameter in the \code{MapAssessmentData} function and
+the \code{useNTermProt} in the \code{AssessGenes} function must both be set to TRUE in order to perform N-terminal proteomics
+assessment. See \code{\link{AssessGenes}} for more details.
 
 Evolutionarily conserved starts and conserved stop are found by first measuring how far the related genomes are from the central
 genome using k-mer frequencies. Next, synteny is mapped between the central genome and each of the most distant related genomes, and

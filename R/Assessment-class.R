@@ -11,7 +11,7 @@
 #'
 #' @details
 #' \code{as.matrix.Assessment} tabulates and returns the number of times each category appears in the \code{CategoryAssignments}
-#' vector within the given \code{Results} object. If the number of genes for any the 12 main gene / ORF categories is zero, a
+#' vector within the given \code{Results} object. If the number of genes for any the 14 main gene / ORF categories is zero, a
 #' count (of zero) will still be included for that category.
 #'
 #' @return A one-row matrix with the counts for the number of genes/ORFs that fall into each category. The corresponding
@@ -193,9 +193,6 @@ print.Assessment <- function(x, ...) {
     printOut <- paste(printOut, "Score Using Only Conserved Start Evidence: ",
                       round(ScoreAssessmentResults(x, "c"), 4), "\n", sep = "")
     
-    printOut <- paste(printOut, "Score Using All Evidence With Weights: ",
-                      round(ScoreAssessmentResults(x, "w"), 4), "\n\n", sep = "")
-    
     ## --------------------------------------------------------------------------------------------------------------- ##
     
     catIndex <- names(allCatSums) == "Y CS+ PE+"
@@ -281,10 +278,14 @@ print.Assessment <- function(x, ...) {
 #' proteomics data and evolutionary conservation data maps to the central genome is plotted.
 #'
 #' If only \code{x} is specified and \code{x} is of subclass \code{Results}, a bar chart describing the number of genes in each
-#' category is plotted.
-#'
+#' category is plotted. For the predicted gene categories, bars are colored by the correctness of that category, where dark green
+#' represents "definitely correct", light green represents "likely correct", white represents "no evidence", dark red represents
+#' "definitely incorrect", light red represents "likely incorrect", and grey represents "potentially incorrect". For the two
+#' categories that come from ORFs without predicted genes, dark blue represents "likely missing" and light blue represents
+#' "potentially missing".
+#' 
 #' If both \code{x} and \code{y} are specified, an interactive genome viewer showing how the proteomics data, evolutionary
-#' evolutionary conservation data, and gene set map to the central genome is plotted.
+#' conservation data, and gene set map to the central genome is plotted.
 #' 
 #' @return Invisibly returns the input object \code{x}
 #'

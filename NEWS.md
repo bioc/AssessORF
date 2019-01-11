@@ -20,6 +20,12 @@
 * Minor updates to plots
 * Bug fixes on previous version's MapAssessmentData updates
 
+## Changes in version 1.1.5
+* Update to how conserved starts and conserved stops are utilized in AssessGenes
+* Removed weighted score
+* Made clarifications to the man pages
+* Minor edits to the vignette
+
 # AssessORF 0.99
 
 ## Changes in version 0.99.19
