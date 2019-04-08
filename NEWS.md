@@ -26,6 +26,10 @@
 * Made clarifications to the man pages
 * Minor edits to the vignette
 
+## Changes in version 1.1.6
+* Added parameters to AssessGenes to bound the range in which to look for conserved starts that can serve as alternative options to a predicted start
+* Added a parameter to AssessGenes that requires ORFs with protein evidence but no predicted start to have a certain minimum number of peptide hits in order to be included in the final output
+
 # AssessORF 0.99
 
 ## Changes in version 0.99.19
