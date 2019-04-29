@@ -191,14 +191,14 @@ AssessGenes <- function(geneLeftPos,
   
   ## Check inputs for error.
   
-  if ((!is.logical(verbose)) ||(anyNA(verbose)) || (length(verbose) != 1)) {
+  if ((!is.logical(verbose)) || (anyNA(verbose)) || (length(verbose) != 1)) {
     stop("'verbose' must be of type logical, be either TRUE or FALSE, and consist of only 1 element.")
   }
   
   ## --------------------------------------------------------------------------------------------------------------- ##
   
   if (anyNA(inputMapObj)) {
-    stop("'inputMapObj' cannot have any NAs or have more than one element.")
+    stop("'inputMapObj' cannot have any NAs.")
   }
   
   if ((is(inputMapObj, "Assessment")) && (is(inputMapObj, "DataMap"))) {
@@ -409,11 +409,11 @@ AssessGenes <- function(geneLeftPos,
     stop("'minLenNORFs' must be a non-negative integer greater than or equal to 0.")
   }
   
-  if ((!is.logical(allowNestedNORFs)) ||(anyNA(allowNestedNORFs)) || (length(allowNestedNORFs) != 1)) {
+  if ((!is.logical(allowNestedNORFs)) || (anyNA(allowNestedNORFs)) || (length(allowNestedNORFs) != 1)) {
     stop("'allowNestedNORFs' must be of type logical, be either TRUE or FALSE, and consist of only 1 element.")
   }
   
-  if ((!is.logical(useNTermProt)) ||(anyNA(useNTermProt)) || (length(useNTermProt) != 1)) {
+  if ((!is.logical(useNTermProt)) || (anyNA(useNTermProt)) || (length(useNTermProt) != 1)) {
     stop("'useNTermProt' must be of type logical, be either TRUE or FALSE, and consist of only 1 element.")
   }
   
