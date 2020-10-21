@@ -268,24 +268,48 @@ print.Assessment <- function(x, ...) {
 #' @param y An optional object of class \code{Assessment} and of either subclass \code{DataMap} or subclass \code{Results}. Its
 #' subclass must be different than the subclass of \code{x}
 #'
-#' @param related_MinConStart Minimum value of the conservation to coverage ratio needed to call a start conserved. Must range
-#' from 0 to 1. Lower values allow more conserved starts through. Recommended to use default value.
+#' @param minConCovRatio_GV Minimum value of the conservation to coverage ratio needed to call a start conserved. Must range
+#' from 0 to 1. Lower values allow more conserved starts through. Only used with the genome viewer. Default value is recommended.
+#'
+#' @param interactive_GV Logical specifying whether or not the genome viewer plot should be interactive. Default is TRUE.
+#'
+#' @param rangeStart_GV,rangeEnd_GV Optional positive integer values that can be specified when generating a genome viewer plot in
+#' order to have the plot zoom into the range of genomic positions between those values. Both values must be within the bounds of
+#' the genome. Omitted (NA) by default, which results in a plot spanning the whole genome.
 #'
 #' @param ... Further plotting parameters.
 #'
 #' @details
-#' If only \code{x} is specified and \code{x} is of subclass \code{DataMap}, an interactive genome viewer showing how the
-#' proteomics data and evolutionary conservation data maps to the central genome is plotted.
-#'
-#' If only \code{x} is specified and \code{x} is of subclass \code{Results}, a bar chart describing the number of genes in each
-#' category is plotted. For the predicted gene categories, bars are colored by the correctness of that category, where dark green
-#' represents "definitely correct", light green represents "likely correct", white represents "no evidence", dark red represents
-#' "definitely incorrect", light red represents "likely incorrect", and grey represents "potentially incorrect". For the two
-#' categories that come from ORFs without predicted genes, dark blue represents "likely missing" and light blue represents
-#' "potentially missing".
+#' If out of \code{x} and \code{y} only \code{x} is specified and \code{x} is of subclass \code{Results}, a bar chart describing
+#' the number of genes in each category is plotted. For the predicted gene categories, bars are colored by the correctness of
+#' that category, where dark green represents "definitely correct", light green represents "likely correct", white represents
+#' "no evidence", dark red represents "definitely incorrect", light red represents "likely incorrect", and grey represents
+#' "potentially incorrect". For the two categories that come from ORFs without predicted genes, dark blue represents
+#' "likely missing" and light blue represents "potentially missing".
 #' 
-#' If both \code{x} and \code{y} are specified, an interactive genome viewer showing how the proteomics data, evolutionary
-#' conservation data, and gene set map to the central genome is plotted.
+#' If out of \code{x} and \code{y} only \code{x}} is specified and \code{x} is of subclass \code{DataMap}, a genome viewer plot
+#' showing how the proteomics data and evolutionary conservation data maps to the central genome is generated.
+#'
+#' If both \code{x} and \code{y} are specified, each of a different subclass, a genome viewer plot showing how the proteomics
+#' data, evolutionary conservation data, and set of genes map to the central genome is generated.
+#' 
+#' @section Genome viewer plot:
+#' 
+#' In the genome viewer plot, predicted starts are magenta lines, predicted stops are cyan lines, genome stops are yellow lines,
+#' conserved starts are gray lines, and proteomic hits are blue / red / green blocks.
+#' 
+#' If \code{interactive_GV} is set to FALSE, a static genome viewer plot is generated. If \code{interactive_GV} is set to TRUE,
+#' a genome viewer plot that can be interacted with using the \code{locator} is generated. In order to interact with the plot,
+#' the user needs to click on the graphics window one or more times and then terminate the locator. One click will scroll the
+#' viewer either to the left or the right (based on which side is closer to the click). Two clicks will zoom the viewer into the
+#' horizontal range between the two click points. Three clicks will zoom out 10-fold, and four clicks will zoom out completely to
+#' the entire genome. To stop interaction with the locator, click zero times then terminate the locator. Depending on the
+#' graphical device, terminating the locator can either done by pressing the 'Finish' / 'Stop' button, hitting the 'Esc' key, or
+#' right-clicking the graphics device.
+#' 
+#' By default, the genome viewer will cover all positions in the genome. If instead both \code{rangeStart_GV} and
+#' \code{rangeEnd_GV} are validly specified, the genome viewer will only span the range of genomic positions between those two
+#' values (at least initially).
 #' 
 #' @return Invisibly returns the input object \code{x}
 #'
@@ -310,7 +334,8 @@ print.Assessment <- function(x, ...) {
 #' plot(currResObj, currMapObj)
 #'
 plot.Assessment <- function(x, y = NULL,
-                            related_MinConStart = 0.8, ...) {
+                            minConCovRatio_GV = 0.8, interactive_GV = TRUE,
+                            rangeStart_GV = NA_integer_, rangeEnd_GV = NA_integer_, ...) {
   
   if (class(x)[1] != "Assessment") {
     stop("'x' must be an object of class 'Assessment'.")
@@ -321,38 +346,35 @@ plot.Assessment <- function(x, y = NULL,
       stop("'y' must be an object of class 'Assessment'.")
     }
     
-    if (!is.numeric(related_MinConStart)) {
-      stop("The value for the conserved start threshold must be a real number.")
-    }
-    
     if (class(x)[2] == "DataMap") {
-      mapObj <- x
+      cMapObj <- x
       
       if (class(y)[2] != "Results") {
         stop("'y' must be an object of subclass 'Results' when x is an object of subclass 'DataMap'.")
       }
       
-      predObj <- y
+      cResObj <- y
     } else if (class(x)[2] == "Results") {
-      predObj <- x
+      cResObj <- x
       
       if (class(y)[2] != "DataMap") {
         stop("'y' must be an object of subclass 'DataMap' when x is an object of subclass 'Results'.")
       }
       
-      mapObj <- y
+      cMapObj <- y
     } else {
       stop("'x' is an unrecognized object of class '", class(x)[2], "'.")
     }
     
-    PlotAssessmentMapping(mapObj, predObj, related_MinConStart)
+    PlotAssessmentMapping(mapObj = cMapObj, resObj = cResObj, minConCovStart = minConCovRatio_GV,
+                          interactivePlot = interactive_GV,
+                          initialPos1 = rangeStart_GV, initialPos2 = rangeEnd_GV)
     
   } else if (class(x)[2] == "DataMap") {
-    if (!is.numeric(related_MinConStart)) {
-      stop("The value for the conserved start threshold must be a real number.")
-    }
     
-    PlotAssessmentMapping(x, NULL, related_MinConStart)
+    PlotAssessmentMapping(mapObj = x, resObj = NULL, minConCovStart = minConCovRatio_GV,
+                          interactivePlot = interactive_GV,
+                          initialPos1 = rangeStart_GV, initialPos2 = rangeEnd_GV)
     
   } else if (class(x)[2] == "Results") {
     geneSource <- x$GeneSource

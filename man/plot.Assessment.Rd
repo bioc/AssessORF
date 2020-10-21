@@ -4,7 +4,15 @@
 \alias{plot.Assessment}
 \title{Plot Assessment Objects}
 \usage{
-\method{plot}{Assessment}(x, y = NULL, related_MinConStart = 0.8, ...)
+\method{plot}{Assessment}(
+  x,
+  y = NULL,
+  minConCovRatio_GV = 0.8,
+  interactive_GV = TRUE,
+  rangeStart_GV = NA_integer_,
+  rangeEnd_GV = NA_integer_,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class \code{Assessment} and of either subclass \code{DataMap} or subclass \code{Results}.}
@@ -12,8 +20,14 @@
 \item{y}{An optional object of class \code{Assessment} and of either subclass \code{DataMap} or subclass \code{Results}. Its
 subclass must be different than the subclass of \code{x}}
 
-\item{related_MinConStart}{Minimum value of the conservation to coverage ratio needed to call a start conserved. Must range
-from 0 to 1. Lower values allow more conserved starts through. Recommended to use default value.}
+\item{minConCovRatio_GV}{Minimum value of the conservation to coverage ratio needed to call a start conserved. Must range
+from 0 to 1. Lower values allow more conserved starts through. Only used with the genome viewer. Default value is recommended.}
+
+\item{interactive_GV}{Logical specifying whether or not the genome viewer plot should be interactive. Default is TRUE.}
+
+\item{rangeStart_GV, rangeEnd_GV}{Optional positive integer values that can be specified when generating a genome viewer plot in
+order to have the plot zoom into the range of genomic positions between those values. Both values must be within the bounds of
+the genome. Omitted (NA) by default, which results in a plot spanning the whole genome.}
 
 \item{...}{Further plotting parameters.}
 }
@@ -24,19 +38,28 @@ Invisibly returns the input object \code{x}
 The \code{plot} method for \code{Assessment} objects
 }
 \details{
-If only \code{x} is specified and \code{x} is of subclass \code{DataMap}, an interactive genome viewer showing how the
-proteomics data and evolutionary conservation data maps to the central genome is plotted.
 
-If only \code{x} is specified and \code{x} is of subclass \code{Results}, a bar chart describing the number of genes in each
-category is plotted. For the predicted gene categories, bars are colored by the correctness of that category, where dark green
-represents "definitely correct", light green represents "likely correct", white represents "no evidence", dark red represents
-"definitely incorrect", light red represents "likely incorrect", and grey represents "potentially incorrect". For the two
-categories that come from ORFs without predicted genes, dark blue represents "likely missing" and light blue represents
-"potentially missing".
-
-If both \code{x} and \code{y} are specified, an interactive genome viewer showing how the proteomics data, evolutionary
-conservation data, and gene set map to the central genome is plotted.
 }
+\section{Genome viewer plot}{
+
+
+In the genome viewer plot, predicted starts are magenta lines, predicted stops are cyan lines, genome stops are yellow lines,
+conserved starts are gray lines, and proteomic hits are blue / red / green blocks.
+
+If \code{interactive_GV} is set to FALSE, a static genome viewer plot is generated. If \code{interactive_GV} is set to TRUE,
+a genome viewer plot that can be interacted with using the \code{locator} is generated. In order to interact with the plot,
+the user needs to click on the graphics window one or more times and then terminate the locator. One click will scroll the
+viewer either to the left or the right (based on which side is closer to the click). Two clicks will zoom the viewer into the
+horizontal range between the two click points. Three clicks will zoom out 10-fold, and four clicks will zoom out completely to
+the entire genome. To stop interaction with the locator, click zero times then terminate the locator. Depending on the
+graphical device, terminating the locator can either done by pressing the 'Finish' / 'Stop' button, hitting the 'Esc' key, or
+right-clicking the graphics device.
+
+By default, the genome viewer will cover all positions in the genome. If instead both \code{rangeStart_GV} and
+\code{rangeEnd_GV} are validly specified, the genome viewer will only span the range of genomic positions between those two
+values (at least initially).
+}
+
 \examples{
 
 currMapObj <- readRDS(system.file("extdata",

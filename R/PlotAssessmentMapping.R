@@ -1,31 +1,97 @@
-PlotAssessmentMapping <- function(mapObj,
-                                 predObj = NULL,
-                                 minConStart) {
+PlotAssessmentMapping <- function(mapObj, resObj = NULL, minConCovStart = 0.8, interactivePlot = TRUE,
+                                  initialPos1 = NA_integer_, initialPos2 = NA_integer_) {
+  
+  ## Get the length of the genome.
   genomeLength <- mapObj$GenomeLength
+  
+  ## ------------------------------------------------------------------------ ##
+  
+  ## Error check 'minConStart' and 'interactivePlot'.
+  
+  if ((!is.numeric(minConCovStart)) || (anyNA(minConCovStart))) {
+    stop("Must specify a valid real number for the start conservation to coverage ratio threshold.")
+  }
+  
+  if (length(minConCovStart) != 1) {
+    stop("Must specify exactly one number for the start conservation to coverage ratio threshold.")
+  }
+  
+  if ((minConCovStart <= 0) || (minConCovStart >= 1)) {
+    stop("Must specify a number between 0 and 1 (inclusive) for the start conservation to coverage ratio threshold..")
+  }
+  
+  if ((!is.logical(interactivePlot)) || (anyNA(interactivePlot)) || (length(interactivePlot) != 1)) {
+    stop("Argument specifying whether the genome viewer should be interactive",
+         " must be of type logical, be either TRUE or FALSE, and consist of only 1 element.")
+  }
+  
+  ## ------------------------------------------------------------------------ ##
+  
+  ## Specifying a pair of genome positions to use as the starting range for the
+  ## plot is optional. Error check accordingly.
+  
+  areBothNA <- as.integer(is.na(initialPos1)) + as.integer(is.na(initialPos2))
+  areBothNull <- as.integer(is.null(initialPos1)) + as.integer(is.null(initialPos2))
+  
+  if ((areBothNA == 2) || (areBothNull == 2)) {
+    useInitialRange <- FALSE
+  } else {
+    if ((areBothNA == 1) || (areBothNull == 1)) {
+      stop("Must specifiy 2 positions in order for the the Genome Viewer to zoom into an initial range.")
+    }
+    
+    if ((length(initialPos1) != 1) || (!is.numeric(initialPos1)) || (initialPos1 %% 1 != 0) ||
+        (length(initialPos2) != 1) || (!is.numeric(initialPos2)) || (initialPos2 %% 1 != 0)) {
+      stop( "Initial range to plot with the Genome Viewer must be given as exactly two separate integer numbers.")
+    }
+    
+    if ((initialPos1 <= 0L) || (initialPos1 > genomeLength) || (initialPos2 <= 0L) || (initialPos2 > genomeLength)) {
+      stop("Initial range to plot with the Genome Viewer must be within the bounds of the genome.")
+    }
+    
+    useInitialRange <- TRUE
+  }
+  
+  ## ------------------------------------------------------------------------ ##
+  
+  ## Get the location of the stops in the genome.
   stops <- mapObj$StopsByFrame
 
+  ## Get information about the proteomics evidence.
+  plotProt <- mapObj$HasProteomics
   fwdProt <- mapObj$FwdProtHits
   revProt <- mapObj$RevProtHits
-
+  
+  ## Get information about the conserved starts. For each reading direction, 
+  ## the ratio of start codon conservation to coverage serves as a measure
+  ## of evolutionary conservation of the corresponding start in the genome.
+  plotConStarts <- mapObj$HasConservation
+  
   fwdCov <- mapObj$FwdCoverage
   fwdConStart <- mapObj$FwdConStarts
-
+  
   revCov <- mapObj$RevCoverage
   revConStart <- mapObj$RevConStarts
 
+  ## If a results object is provided, get information about the location of
+  ## predicted genes & plot them. Otherwise, skip plotting predicted genes.
   addPred <- FALSE
 
-  if (!is.null(predObj)) {
+  if (!is.null(resObj)) {
     addPred <- TRUE
 
-    predLeft <- predObj$GeneLeftPos
-    predRight <- predObj$GeneRightPos
-    predStrand <- predObj$GeneStrand
+    predLeft <- resObj$GeneLeftPos
+    predRight <- resObj$GeneRightPos
+    predStrand <- resObj$GeneStrand
   }
+  
+  ## ------------------------------------------------------------------------ ##
 
+  ## Get the species name and strain ID that the genome corresponds to.
   speciesName <- mapObj$Species
   strainID <- mapObj$StrainID
 
+  ## Generate the plot title based on that species name and strain ID.
   if ((speciesName != "") && (strainID != "")) {
     plotTitle <- bquote(italic(.(speciesName))~.(strainID)~"Genome Viewer")
   } else if ((speciesName != "")) {
@@ -35,13 +101,12 @@ PlotAssessmentMapping <- function(mapObj,
   } else {
     plotTitle <- "Genome Viewer"
   }
+  
+  ## ------------------------------------------------------------------------ ##
 
-  ## This function determines the saturation for proteomic hit blocks based on their scores.
-  chooseColor <- function(color,
-                          protScores,
-                          start,
-                          end,
-                          max=20) {
+  ## This function determines the color of proteomic hit blocks and calculates
+  ## the saturation of that color based on their scores.
+  chooseColor <- function(color, protScores, start, end, max=20) {
 
     stopifnot(length(start)==length(end),
               color > 1 && color < 5,
@@ -72,7 +137,11 @@ PlotAssessmentMapping <- function(mapObj,
 
     return(colors)
   }
+  
+  ## ------------------------------------------------------------------------ ##
 
+  ## This function plots all conserved starts, proteomic hits, genome stops, and
+  ## predicted genes within the given range of forward strand positions.
   plotRange <- function(fwdRange) {
     revRange <- genomeLength - fwdRange + 1L
 
@@ -95,9 +164,9 @@ PlotAssessmentMapping <- function(mapObj,
         axis(2, 0:2 + 0.5, c(1, 2, 3))
 
         if (addPred) {
-          # add predicted genes
+          # add predicted genes, forward strand
           predFwd <- which(predStrand == "+")
-          abline(v = predLeft[predFwd], col = "magenta")
+          abline(v = predLeft[predFwd], col = "magenta", lwd = 1.25)
           abline(v = predRight[predFwd], col = "cyan")
         }
 
@@ -118,10 +187,10 @@ PlotAssessmentMapping <- function(mapObj,
         axis(2, 0:2 + 0.5, c(1, 2, 3))
 
         if (addPred) {
-          # add predicted genes
+          # add predicted genes, reverse strand
           predRev <- which(predStrand == "-")
           abline(v = genomeLength - predLeft[predRev] + 1, col="cyan")
-          abline(v = genomeLength - predRight[predRev] + 1, col="magenta")
+          abline(v = genomeLength - predRight[predRev] + 1, col="magenta", lwd = 1.25)
         }
 
         abline(h = 0:3)
@@ -145,7 +214,7 @@ PlotAssessmentMapping <- function(mapObj,
                col="yellow", border=NA)
         }
 
-        w <- which(fwdConStart[range]/fwdCov[range] > minConStart &
+        w <- which(fwdConStart[range]/fwdCov[range] > minConCovStart &
                      ((range - frame) %% 3)==0)
 
         if (length(w) > 0) {
@@ -171,7 +240,7 @@ PlotAssessmentMapping <- function(mapObj,
                col="yellow", border=NA)
         }
 
-        w <- which(revConStart[range]/revCov[range] > minConStart &
+        w <- which(revConStart[range]/revCov[range] > minConCovStart &
                      ((range - frame - 3) %% 3)==0)
 
         if (length(w) > 0) {
@@ -181,22 +250,55 @@ PlotAssessmentMapping <- function(mapObj,
       }
     }
   }
+  
+  ## ------------------------------------------------------------------------ ##
 
-  checkRange <- function(x) {
-    if (all(x < 0))
-      stop("X-axis out of bounds.")
-    if (all(x > genomeLength))
-      stop("X-axis out of bounds.")
-    if (x[1] < 0)
-      x[1] <- 0
-    if (x[2] > genomeLength)
-      x[2] <- genomeLength
-    x <- floor(x)
-    return(x[1]:x[2])
+  ## This function takes in a pair of x-coordinates / genome positions, makes
+  ## sure the combination of the two values are valid, and then returns the
+  ## range of genome positions between the them.
+  checkRange <- function(xCoords) {
+    if ((all(xCoords < 0)) || (all(xCoords > genomeLength))) {
+      stop("x-axis coordinates are out of bounds.")
+    }
+    
+    if (xCoords[2] < xCoords[1]) {
+      intSwap <- xCoords[1]
+      xCoords[1] <- xCoords[2]
+      xCoords[2] <- intSwap
+    }
+    
+    if (xCoords[1] <= 0) {
+      xCoords[1] <- 1L
+    }
+    
+    if (xCoords[2] > genomeLength){
+      xCoords[2] <- genomeLength
+    }
+    
+    xCoords <- floor(xCoords)
+    
+    return(xCoords[1]:xCoords[2])
   }
-
+  
+  ## ------------------------------------------------------------------------ ##
+  
+  ## This variable specifies which sequence of the genome to use. As of now,
+  ## AssessORF only works with single-chromosome genomes.
   seq <- 1L
-  l <- list(x=integer(4))
+  
+  ## ------------------------------------------------------------------------ ##
+
+  if (!interactivePlot) {
+    if (useInitialRange) {
+      plotRange(checkRange(c(initialPos1, initialPos2)))
+    } else {
+      plotRange(seq_len(genomeLength))
+    }
+    
+    return(invisible(mapObj))
+  }
+  
+  ## ------------------------------------------------------------------------ ##
 
   cat("How to Interact With the Genome Viewer Via the Locator:\n",
       "Click the graphics window one or more times and then terminate the locator.\n",
@@ -205,24 +307,31 @@ PlotAssessmentMapping <- function(mapObj,
       "3 clicks: Zoom out 10-fold.\n",
       "4 clicks: Zoom out completely and view the entire genome.\n",
       "To stop interaction, click zero times then terminate the locator.\n",
-      "Depending on the graphical device, terminating the locator can either be ",
-      "done by pressing the 'Stop' button, hitting the 'Esc' key, or right-clicking.\n")
+      "Depending on the graphical device, terminating the locator can either be done ",
+      "by pressing the 'Finish' / 'Stop' button, hitting the 'Esc' key, or right-clicking.\n",
+      sep = "")
+  
+  locValues <- list(x=integer(4))
+  
+  if (useInitialRange) {
+    locValues$x <- c(initialPos1, initialPos2)
+  }
 
   repeat {
-    if (length(l$x)==0) { # no clicks
+    if (length(locValues$x)==0) { # no clicks
       break
-    } else if (length(l$x)==1) { # scroll
+    } else if (length(locValues$x)==1) { # scroll
       temp <- list(x=par("usr")[c(1, 2)])
       mid <- (temp$x[1] + temp$x[2])/2
-      if (l$x - mid > 0) { # move right on forward
+      if (locValues$x - mid > 0) { # move right on forward
         temp$x <- temp$x + (temp$x[2] - temp$x[1])/2
       } else { # move left on forward
         temp$x <- temp$x - (temp$x[2] - temp$x[1])/2
       }
       plotRange(checkRange(c(temp$x[1], temp$x[2])))
-    } else if (length(l$x)==2) { # zoom to range
-      plotRange(checkRange(c(l$x[1], l$x[2])))
-    } else if (length(l$x)==3) { # zoom out 10-fold
+    } else if (length(locValues$x)==2) { # zoom to range
+      plotRange(checkRange(c(locValues$x[1], locValues$x[2])))
+    } else if (length(locValues$x)==3) { # zoom out 10-fold
       temp <- par("usr")[c(1, 2)]
       dtemp <- diff(temp)
       temp <- c(temp[1] - dtemp*4.5,
@@ -231,7 +340,7 @@ PlotAssessmentMapping <- function(mapObj,
     } else { # plot all
       plotRange(seq_len(genomeLength))
     }
-    l <- locator()
+    locValues <- locator()
   }
   
   par(mfrow=c(1,1))

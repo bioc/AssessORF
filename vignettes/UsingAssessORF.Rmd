@@ -268,6 +268,20 @@ plot(currResObj)
 
 \newpage
 
+Plotting the results object in combination with its corresponding mapping object generates a genome viewer plot that shows how evolutionary conservation evidence & proteomics evidence align to the genome of interest, particularly in relation to the set of predicted genes:
+```{r fig.height=15, fig.width=15, fig.align="center"}
+plot(currMapObj, currResObj, interactive_GV = FALSE,
+     rangeStart_GV = 106000, rangeEnd_GV = 120000)
+```
+
+In the genome viewer plot, predicted starts are magenta lines, predicted stops are cyan lines, genome stops are yellow lines, conserved starts are gray lines, and proteomic hits are blue / red / green blocks.
+
+In this example, `interactive_GV` was set to `FALSE` which results in an static genome viewer plot being generated. Setting `interactive_GV` to be `TRUE` results in a genome viewer that can interacted with via the `locator`, which facilitates further exploration of how the available evidence supports some genes and disproves others. With the interactive genome viewer, users may scroll to the left or right, zoom in to particular region, or zoom out. 
+
+Specifying an initial range of genomic positions to plot using `rangeStart_GV` and `rangeEnd_GV` is optional but useful for zooming into a particular region of the genome to understand why a particular gene (or group of genes) were categorized as correct / incorrect. Omitting those arguments will result genome viewer plot that spans the whole genome, which may overwhelm some graphical devices.
+
+\newpage
+
 It is also possible to do a mosaic plot of the results object. The mosaic plot shows how the distribution of categories varies by gene length:
 ```{r fig.height=15, fig.width=15, fig.align="center"}
 mosaicplot(currResObj)
