@@ -287,13 +287,13 @@ print.Assessment <- function(x, ...) {
 #' "potentially incorrect". For the two categories that come from ORFs without predicted genes, dark blue represents
 #' "likely missing" and light blue represents "potentially missing".
 #' 
-#' If out of \code{x} and \code{y} only \code{x}} is specified and \code{x} is of subclass \code{DataMap}, a genome viewer plot
-#' showing how the proteomics data and evolutionary conservation data maps to the central genome is generated.
+#' If out of \code{x} and \code{y} only \code{x} is specified and \code{x} is of subclass \code{DataMap}, a genome viewer plot
+#' showing how the proteomics data and evolutionary conservation data map to the central genome is generated.
 #'
 #' If both \code{x} and \code{y} are specified, each of a different subclass, a genome viewer plot showing how the proteomics
-#' data, evolutionary conservation data, and set of genes map to the central genome is generated.
+#' data, evolutionary conservation data, and set of predicted genes map to the central genome is generated.
 #' 
-#' @section Genome viewer plot:
+#' ## The genome viewer
 #' 
 #' In the genome viewer plot, predicted starts are magenta lines, predicted stops are cyan lines, genome stops are yellow lines,
 #' conserved starts are gray lines, and proteomic hits are blue / red / green blocks.
@@ -307,9 +307,12 @@ print.Assessment <- function(x, ...) {
 #' graphical device, terminating the locator can either done by pressing the 'Finish' / 'Stop' button, hitting the 'Esc' key, or
 #' right-clicking the graphics device.
 #' 
-#' By default, the genome viewer will cover all positions in the genome. If instead both \code{rangeStart_GV} and
-#' \code{rangeEnd_GV} are validly specified, the genome viewer will only span the range of genomic positions between those two
-#' values (at least initially).
+#' If both \code{rangeStart_GV} and \code{rangeEnd_GV} are validly specified, the genome viewer will only span the range of
+#' genomic positions between those two values. If interaction is turned on with \code{interactive_GV} and a static plot is not
+#' being generated, this only applies to the initial state of the genome viewer plot. By default, \code{rangeStart_GV} and
+#' \code{rangeEnd_GV} are not specified, resulting in the genome viewer covering all positions in the genome (at least to start).
+#' WARNING: plotting the whole genome at once may overwhelm some graphical devices and cause R to slow down or crash, so it is
+#' recommended to avoid doing so unless absolutely necessary.
 #' 
 #' @return Invisibly returns the input object \code{x}
 #'
