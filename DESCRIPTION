@@ -2,7 +2,7 @@ Package: AssessORF
 Type: Package
 Title: Assess Gene Predictions Using Proteomics and Evolutionary Conservation
 Version: 1.21.0
-Date: 2020-10-23
+Date: 2024-04-09
 Authors@R: c(
     person("Deepank", "Korandla", email = "dkorandl@alumni.cmu.edu", role = c("aut", "cre")),
     person("Erik", "Wright", email = "eswright@pitt.edu", role = "aut"))
@@ -13,7 +13,7 @@ Description: In order to assess the quality of a set of predicted genes for a ge
     evolutionarily conserved start codons as the forms of evidence.
 Depends: R (>= 3.5.0), DECIPHER (>= 2.10.0)
 Imports: Biostrings, GenomicRanges, IRanges, graphics, grDevices, methods, stats, utils
-Suggests: AssessORFData, BiocStyle, knitr, rmarkdown
+Suggests: AssessORFData, BiocStyle, knitr, rmarkdown, RSQLite (>= 1.1)
 biocViews: ComparativeGenomics, GenePrediction, GenomeAnnotation, Genetics, Proteomics,
     QualityControl, Visualization
 License: GPL-3
